@@ -1,4 +1,4 @@
-package edu.uci.ics.UCNETID.service.billing.logger;
+package edu.uci.ics.hcheng10.service.billing.logger;
 
 import java.io.File;
 import java.io.IOException;
