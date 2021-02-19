@@ -30,6 +30,9 @@ public class cartService {
         insertRequestModel requestModel;
         ResponseModel responseModel = null;
         ObjectMapper mapper = new ObjectMapper();
+        String email2 = headers.getHeaderString("email");
+        String session_id = headers.getHeaderString("session_id");
+        String transaction_id = headers.getHeaderString("transaction_id");
         try {
             requestModel = mapper.readValue(jsonText, insertRequestModel.class);
         } catch (IOException e) {
@@ -72,7 +75,10 @@ public class cartService {
             ServiceLogger.LOGGER.info("Shopping cart operation failed.");
             responseModel = new ResponseModel(resultCode, "Shopping cart operation failed.");
         }
-        return Response.status(Response.Status.OK).entity(responseModel).build();
+        return Response.status(Response.Status.OK).entity(responseModel)
+                .header("email", email2)
+                .header("session_id", session_id)
+                .header("transaction_id", transaction_id).build();
     }
 
     @Path("update")

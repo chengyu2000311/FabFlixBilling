@@ -65,9 +65,14 @@ public class cart {
 
     public static Integer insertIntoCart(String email, String movie_id, Integer quantity) {
         String query = "INSERT INTO cart(email, movie_id, quantity) VALUE (?, ?, ?)";
+        String check = "SELECT movie_id FROM movie WHERE movie_id LIKE ?";
         if (quantity <= 0) return 33;
         try {
             PreparedStatement ps = BillingService.getCon().prepareStatement(query);
+            PreparedStatement ps1 = BillingService.getCon().prepareStatement(check);
+            ps1.setString(1, movie_id);
+            ResultSet rs = ps1.executeQuery();
+            if (!rs.next()) return 3150;
             ps.setString(1, email);
             ps.setString(2, movie_id);
             ps.setInt(3, quantity);
