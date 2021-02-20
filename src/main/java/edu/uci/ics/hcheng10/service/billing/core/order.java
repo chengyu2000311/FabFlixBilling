@@ -150,9 +150,9 @@ public class order {
                     String tcurrency = response.get("purchase_units").get(0).get("payments").get("captures").get(0).get("seller_receivable_breakdown").get("paypal_fee").get("currency_code").textValue();
                     transaction_fee = new transactionModel.transaction.transaction_fee(tvalue, tcurrency);
                 }
-                String capture_time = response.get("create_time").textValue();
+                String create_time = response.get("purchase_units").get(0).get("payments").get("captures").get(0).get("create_time").textValue();
                 String update_time = null;
-                if (!noTranFee) update_time = response.get("update_time").textValue();
+                if (!noTranFee) update_time = response.get("purchase_units").get(0).get("payments").get("captures").get(0).get("update_time").textValue();
                 String getItems = "SELECT email, s.movie_id, quantity, unit_price, discount, sale_date\n" +
                         "FROM sale s INNER JOIN movie_price mp on s.movie_id = mp.movie_id\n" +
                         "WHERE email LIKE ?";
@@ -171,7 +171,7 @@ public class order {
                 }
                 transactionModel.transaction.item cItems[] = new transactionModel.transaction.item[items.size()];
                 cItems = items.toArray(cItems);
-                transactionModel.transaction transaction = new transactionModel.transaction(capture_id, status, amount, transaction_fee, capture_time, update_time, cItems);
+                transactionModel.transaction transaction = new transactionModel.transaction(capture_id, status, amount, transaction_fee, create_time, update_time, cItems);
                 transactions.add(transaction);
             }
             transactionModel.transaction[] transactionsS = new transactionModel.transaction[transactions.size()];

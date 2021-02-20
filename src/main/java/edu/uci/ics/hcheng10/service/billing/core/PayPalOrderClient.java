@@ -38,9 +38,9 @@ public class PayPalOrderClient {
         orderRequest.checkoutPaymentIntent("CAPTURE");
 
         //Create application context with return url upon payer completion.
-        ApplicationContext applicationContext = new ApplicationContext();
-//.returnUrl("http://localhost:12345/api/billing/order/complete")
-//                .cancelUrl("http://localhost:12345/api/billing/order/place")
+        ApplicationContext applicationContext = new ApplicationContext()
+                .returnUrl("http://localhost:12345/api/billing/order/complete")
+                .cancelUrl("http://localhost:12345/api/billing/order/place");
 
         orderRequest.applicationContext(applicationContext);
         List<PurchaseUnitRequest> purchaseUnits = new ArrayList<>();
@@ -118,12 +118,11 @@ public class PayPalOrderClient {
         HttpResponse<Order> response = this.client.execute(request);
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(new Json().serialize(response.result()));
-        System.out.println(rootNode.get("purchase_units").get(0).get("amount"));
+        System.out.println("Full response body:" + (new Json().serialize( response.result())));
 //        for (JsonNode obJ: rootNode.get("purchase_units")) {
 //            System.out.println(obJ.get("amount").get("value"));
 //        }
         return rootNode;
-        // System.out.println("Full response body:" + (new Json().serialize( response.result())));
         // System.out.println(new JSONObject(new Json().serialize(response.result())).toString(4));
     }
 

@@ -5,9 +5,7 @@ import edu.uci.ics.hcheng10.service.billing.BillingService;
 import edu.uci.ics.hcheng10.service.billing.configs.IdmConfigs;
 import edu.uci.ics.hcheng10.service.billing.configs.MoviesConfigs;
 import edu.uci.ics.hcheng10.service.billing.logger.ServiceLogger;
-import edu.uci.ics.hcheng10.service.billing.model.ResponseModel;
-import edu.uci.ics.hcheng10.service.billing.model.plevelRequestModel;
-import edu.uci.ics.hcheng10.service.billing.model.retrieveModel;
+import edu.uci.ics.hcheng10.service.billing.model.*;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 
@@ -61,6 +59,35 @@ public class cart {
 
         ServiceLogger.LOGGER.info("The resultCode is " + responseModel.getResultCode());
         return responseModel.getResultCode();
+    }
+
+    public static thumbnailResponseModel getMovies(String[] movie_ids) {
+        thumbnailRequestModel requestModel = new thumbnailRequestModel(movie_ids);
+        thumbnailResponseModel responseModel = null;
+        ServiceLogger.LOGGER.info("Building client...");
+        Client client = ClientBuilder.newClient();
+        client.register(JacksonFeature.class);
+
+        ServiceLogger.LOGGER.info("Building WebTarget...");
+        WebTarget webTarget = client.target(movieServicePath).path(moviesEndpointPath);
+
+        ServiceLogger.LOGGER.info("Starting invocation builder...");
+        Invocation.Builder invocationBuilder = webTarget.request(MediaType.APPLICATION_JSON);
+
+        ServiceLogger.LOGGER.info("Sending request...");
+        Response response = invocationBuilder.post(Entity.entity(requestModel, MediaType.APPLICATION_JSON));
+        ServiceLogger.LOGGER.info("Request sent.");
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String jsonText = response.readEntity(String.class);
+            responseModel = mapper.readValue(jsonText, thumbnailResponseModel.class);
+            ServiceLogger.LOGGER.info("Successfully mapped response to POJO.");
+        } catch (IOException e) {
+            ServiceLogger.LOGGER.warning("Unable to map response to POJO.");
+        }
+
+        ServiceLogger.LOGGER.info("The resultCode is " + responseModel.getResultCode());
+        return responseModel;
     }
 
     public static Integer insertIntoCart(String email, String movie_id, Integer quantity) {
@@ -127,8 +154,8 @@ public class cart {
     }
 
     public static retrieveModel retrieveCart(String email) {
-        String query = "SELECT c.email, mp.unit_price, mp.discount, c.quantity, c.movie_id, m.title, m.backdrop_path, m.poster_path\n" +
-                "FROM cart c LEFT JOIN movie m on c.movie_id = m.movie_id LEFT JOIN movie_price mp on c.movie_id = mp.movie_id\n" +
+        String query = "SELECT c.email, mp.unit_price, mp.discount, c.quantity, c.movie_id\n" +
+                "FROM cart c LEFT JOIN movie_price mp on c.movie_id = mp.movie_id\n" +
                 "WHERE c.email LIKE ?";
         retrieveModel responseModel = null;
         try {
@@ -153,10 +180,14 @@ public class cart {
                 Float discount = rs.getFloat(3);
                 Integer quantity = rs.getInt(4);
                 String movie_id = rs.getString(5);
-                String movie_title = rs.getString(6);
-                String backdrop_path = rs.getString(7);
-                String poster_path = rs.getString(8);
-                items[i] = new retrieveModel.itemModel(theEmail, unit_price, discount, quantity, movie_id, movie_title, backdrop_path, poster_path);
+                String[] movie_ids = {movie_id};
+                thumbnailResponseModel res = getMovies(movie_ids);
+                if (res.getResultCode().equals(210)) {
+                    String movie_title = res.getThumbnails()[0].getTitle();
+                    String backdrop_path = res.getThumbnails()[0].getBackdrop_path();
+                    String poster_path = res.getThumbnails()[0].getPoster_path();
+                    items[i] = new retrieveModel.itemModel(theEmail, unit_price, discount, quantity, movie_id, movie_title, backdrop_path, poster_path);
+                }
             }
             ServiceLogger.LOGGER.info("Shopping cart retrieved successfully.");
             responseModel = new retrieveModel(3130, "Shopping cart retrieved successfully.",  items);

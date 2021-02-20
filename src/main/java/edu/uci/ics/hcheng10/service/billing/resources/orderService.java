@@ -125,7 +125,7 @@ public class orderService {
     @Path("complete")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response complete(@QueryParam("token") String token, @QueryParam("payer_id") String payer_id) {
+    public Response complete(@QueryParam("token") String token, @QueryParam("PayerID") String payer_id) {
         ResponseModel responseModel;
         try {
             PayPalOrderClient client = new PayPalOrderClient();
