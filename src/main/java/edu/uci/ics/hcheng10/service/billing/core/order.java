@@ -38,7 +38,7 @@ public class order {
                 Integer quantity = rs.getInt(1);
                 Float unit_price = rs.getFloat(2);
                 Float discount  = rs.getFloat(3);
-                totalAmount += quantity*unit_price*discount;
+                totalAmount += quantity*unit_price*(1-discount);
             }
             return totalAmount;
         } catch (SQLException e) {
